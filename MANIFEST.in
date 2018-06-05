@@ -1,0 +1,18 @@
+include MANIFEST.in
+include requirements.txt
+include *.json
+include *.md
+include *.py
+include *.txt
+recursive-include mailchimpconnector *.css
+recursive-include mailchimpconnector *.csv
+recursive-include mailchimpconnector *.html
+recursive-include mailchimpconnector *.ico
+recursive-include mailchimpconnector *.js
+recursive-include mailchimpconnector *.json
+recursive-include mailchimpconnector *.md
+recursive-include mailchimpconnector *.png
+recursive-include mailchimpconnector *.py
+recursive-include mailchimpconnector *.svg
+recursive-include mailchimpconnector *.txt
+recursive-exclude mailchimpconnector *.pyc
