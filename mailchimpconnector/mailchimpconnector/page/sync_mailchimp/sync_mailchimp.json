@@ -1,0 +1,25 @@
+{
+ "creation": "2017-12-27 20:54:31.614045", 
+ "docstatus": 0, 
+ "doctype": "Page", 
+ "idx": 0, 
+ "icon": "octicon octicon-mail",
+ "modified": "2018-06-06 08:08:01.983200", 
+ "modified_by": "Administrator", 
+ "module": "mailchimpconnector", 
+ "name": "sync_mailchimp", 
+ "owner": "Administrator", 
+ "page_name": "sync_mailchimp", 
+ "roles": [
+  {
+   "role": "Sales User"
+  }, 
+  {
+   "role": "System Manager"
+  }
+ ], 
+ "script": null, 
+ "standard": "Yes", 
+ "style": null, 
+ "title": "Sync MailChimp"
+}
