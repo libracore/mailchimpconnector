@@ -6,7 +6,7 @@ frappe.pages['sync_mailchimp'].on_page_load = function(wrapper) {
 	});
 
 	frappe.sync_mailchimp.make(page);
-	frappe.sync_mailchimp.run();
+	frappe.sync_mailchimp.run(page);
     
     // add the application reference
     frappe.breadcrumbs.add("MailChimpConnector");
@@ -22,8 +22,7 @@ frappe.sync_mailchimp = {
 		$(frappe.render_template('sync_mailchimp', data)).appendTo(me.body);
         
 		// attach button handlers
-		this.page.main.find(".btn-parse-file").on('click', function() {
-			
+		this.page.main.find(".btn-parse-file").on('click', function() {			
 			frappe.call({
 				method: 'mailchimpconnector.mailchimpconnector.page.sync_mailchimp.sync_mailchimp.get_lists',
 				/*args: {
@@ -41,8 +40,48 @@ frappe.sync_mailchimp = {
 			}); 
 
 		});
+        this.page.main.find(".btn-upload-contacts").on('click', function() {	
+            
+        });
+        
 	},
-	run: function() {
-
+	run: function(page) {
+        // load MailChimp lists
+        load_mailchimp_lists(page);
 	}
+}
+
+function load_mailchimp_lists(page) {
+    frappe.call({
+        method: 'mailchimpconnector.mailchimpconnector.page.sync_mailchimp.sync_mailchimp.get_lists',
+        callback: function(r) {
+            if (r.message) {
+                var select = document.getElementById("mailchimp_lists");
+                for (var i = 0; i < r.message.lists.length; i++) {
+                    var opt = document.createElement("option");
+                    opt.value = r.message.lists[i].id;
+                    opt.innerHTML = r.message.lists[i].name;
+                    select.appendChild(opt);
+                }
+            } 
+        }
+    }); 
+}
+
+function get_mailchimp_members(page, list_id) {
+    frappe.call({
+        method: 'mailchimpconnector.mailchimpconnector.page.sync_mailchimp.sync_mailchimp.get_members',
+        args: { 'list_id': list_id },
+        callback: function(r) {
+            if (r.message) {
+                var select = document.getElementById("mailchimp_lists");
+                for (var i = 0; i < r.message.lists.length; i++) {
+                    var opt = document.createElement("option");
+                    opt.value = r.message.lists[i].id;
+                    opt.innerHTML = r.message.lists[i].name;
+                    select.appendChild(opt);
+                }
+            } 
+        }
+    });
 }

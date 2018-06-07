@@ -48,5 +48,21 @@ def get_lists():
         None, verify_ssl)
     results = json.loads(raw)
         
-    return { 'lists': results['lists'], 'message': "Done" }
+    return { 'lists': results['lists'] }
 
+@frappe.whitelist()
+def get_members(list_id):
+    config = frappe.get_single("MailChimpConnector Settings")
+    
+    if not config.host or not config.api_key:
+        frappe.throw( _("No configuration found. Please make sure that there is a MailChimpConnector configuration") )
+    
+    if config.verify_ssl != 1:
+        verify_ssl = False
+    else:
+        verify_ssl = True
+    raw = execute(config.host + "/lists/{0}/members?fields=members.id,members.email_address,members.status", config.api_key, 
+        None, verify_ssl)
+    results = json.loads(raw)
+        
+    return { 'members': results['members'] }

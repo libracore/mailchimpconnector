@@ -4,16 +4,30 @@
   <p class="text-muted">{%= __("Synchronise contacts and compaigns to MailChimp") %}</p>
 
   <div class="section-body">
-      <div class="row">
-	<div class="form-column col-sm-4">
+    <div class="row">
+	  <div class="form-column col-sm-4">
 	    <p>{{ __("Parse") }}</p>
 	    <button type="submit" class="btn btn-sm btn-primary btn-parse-file">{{ __("Parse") }}</button>
-	</div>
-	<div class="form-column col-sm-4">
+	  </div>
+      <div class="form-column col-sm-4">
+	    <p>{{ __("MailChimp Lists") }}</p>
+	    <select id="mailchimp_lists">
+
+	    </select>
+      </div>
+	  <div class="form-column col-sm-4">
 	    <div class="insert-log-messages"></div>
 	  </div>  
-      </div>
+    </div>
 
+    <div class="row">
+	  <div class="form-column col-sm-4">
+	    <p>{{ __("Upload") }}</p>
+	    <!-- <button type="submit" class="btn btn-sm btn-primary btn-upload-customers">{{ __("from Customers") }}</button> -->
+        <button type="submit" class="btn btn-sm btn-primary btn-upload-contacts">{{ __("from Contacts") }}</button>
+	  </div>        
+    </div>
+            
   </div>
   
 </div>
