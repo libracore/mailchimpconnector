@@ -23,25 +23,15 @@ frappe.sync_mailchimp = {
         
 		// attach button handlers
 		this.page.main.find(".btn-parse-file").on('click', function() {			
-			frappe.call({
-				method: 'mailchimpconnector.mailchimpconnector.page.sync_mailchimp.sync_mailchimp.get_lists',
-				/*args: {
-					content: content
-				},*/
-				callback: function(r) {
-					if (r.message) {
-						var parent = page.main.find(".insert-log-messages").empty();
-                        console.log(r.message);
-                        r.message.lists.forEach(function(entry) {
-						    $('<p>' + __(entry.name) + '</p>').appendTo(parent);
-                        });
-					} 
-				}
-			}); 
+			// get selected list
+			var list_id = document.getElementById("mailchimp_lists").value;
+			get_mailchimp_members(page, list_id);
 
 		});
         this.page.main.find(".btn-upload-contacts").on('click', function() {	
-            
+            // get selected list
+			var list_id = document.getElementById("mailchimp_lists").value;
+			sync_contacts(page, list_id);
         });
         
 	},
@@ -74,12 +64,24 @@ function get_mailchimp_members(page, list_id) {
         args: { 'list_id': list_id },
         callback: function(r) {
             if (r.message) {
-                var select = document.getElementById("mailchimp_lists");
-                for (var i = 0; i < r.message.lists.length; i++) {
-                    var opt = document.createElement("option");
-                    opt.value = r.message.lists[i].id;
-                    opt.innerHTML = r.message.lists[i].name;
-                    select.appendChild(opt);
+                var parent = page.main.find(".insert-log-messages").empty();
+                for (var i = 0; i < r.message.members.length; i++) {
+                    $('<p>' + __(r.message.members[i].email_address) + '</p>').appendTo(parent);
+                }
+            } 
+        }
+    });
+}
+
+function sync_contacts(frm, list_id) {
+	frappe.call({
+        method: 'mailchimpconnector.mailchimpconnector.page.sync_mailchimp.sync_mailchimp.sync_contacts',
+        args: { 'list_id': list_id },
+        callback: function(r) {
+            if (r.message) {
+                var parent = page.main.find(".insert-log-messages").empty();
+                for (var i = 0; i < r.message.members.length; i++) {
+                    $('<p>' + __(r.message.members[i].email_address) + '</p>').appendTo(parent);
                 }
             } 
         }
