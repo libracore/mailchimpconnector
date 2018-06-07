@@ -32,7 +32,10 @@ frappe.sync_mailchimp = {
 				callback: function(r) {
 					if (r.message) {
 						var parent = page.main.find(".insert-log-messages").empty();
-						$('<p>' + __(r.message.message) + '</p>').appendTo(parent);
+                        console.log(r.message);
+                        r.message.lists.forEach(function(entry) {
+						    $('<p>' + __(entry.name) + '</p>').appendTo(parent);
+                        });
 					} 
 				}
 			}); 

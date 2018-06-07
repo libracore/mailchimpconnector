@@ -17,22 +17,22 @@ except ImportError:
 from datetime import datetime
 
 # execute API function
-def execute(host, api_token, payload):  
+def execute(host, api_token, payload, verify_ssl=True):  
     try:
-        
         response = requests.request(method='GET',
             url=host,
             json=json.dumps(payload).encode(),
-            auth=HTTPBasicAuth("MailChimpConnector", api_token))
+            auth=HTTPBasicAuth("MailChimpConnector", api_token),
+            verify=verify_ssl)
         
         status=response.status_code
         text=response.text
         
         return text
-    except:
+    except Exception as e:
         #frappe.log_error("Execution of http request failed. Please check host and API token.")
-        frappe.throw("Execution of http request failed. Please check host and API token.")
-        
+        frappe.throw("Execution of http request failed. Please check host and API token. ({0})".format(e))
+
 @frappe.whitelist()
 def get_lists():
     config = frappe.get_single("MailChimpConnector Settings")
@@ -40,8 +40,13 @@ def get_lists():
     if not config.host or not config.api_key:
         frappe.throw( _("No configuration found. Please make sure that there is a MailChimpConnector configuration") )
     
-    
-    results = execute(config.host + "/lists", config.api_key, None)
-    frappe.throw(results)
-    
-    return { 'lists': ["List 1", "List 2"], 'message': "Done" }
+    if config.verify_ssl != 1:
+        verify_ssl = False
+    else:
+        verify_ssl = True
+    raw = execute(config.host + "/lists?fields=lists.name,lists.id", config.api_key, 
+        None, verify_ssl)
+    results = json.loads(raw)
+        
+    return { 'lists': results['lists'], 'message': "Done" }
+
