@@ -9,6 +9,7 @@ def get_data():
 			"color": "#46b8e3",
 			"icon": "octicon octicon-mail",
 			"type": "module",
-			"label": _("MailChimpConnector")
+			"label": _("MailChimpConnector"),
+            "hidden": 1
 		}
 	]
