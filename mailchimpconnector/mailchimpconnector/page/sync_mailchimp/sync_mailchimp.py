@@ -23,24 +23,7 @@ def execute(host, api_token, payload, verify_ssl=True, method="GET"):
         response = requests.request(
             method=method,
             url=host,
-            json=json.dumps(payload).encode(),
-            auth=HTTPBasicAuth("MailChimpConnector", api_token),
-            verify=verify_ssl)
-        
-        status=response.status_code
-        text=response.text
-        
-        return text
-    except Exception as e:
-        #frappe.log_error("Execution of http request failed. Please check host and API token.")
-        frappe.throw("Execution of http request failed. Please check host and API token. ({0})".format(e))
-
-# execute API function
-def execute_put(host, api_token, payload, verify_ssl=True):  
-    try:
-        response = requests.put(
-            url=host,
-            json=json.dumps(payload).encode(),
+            json=payload,
             auth=HTTPBasicAuth("MailChimpConnector", api_token),
             verify=verify_ssl)
         
@@ -103,20 +86,14 @@ def sync_contacts(list_id):
         filters={'email_id': ['LIKE', u'%@%.%']}, 
         fields=["email_id", "first_name", "last_name", "unsubscribed"])
     
-    #frappe.throw(erp_contacts)
+    if not erp_contacts:
+        frappe.msgprint( _("No contacts found") )
+        return
         
     # sync
     for contact in erp_contacts:
         # compute mailchimp id (md5 hash of lower-case email)
         mc_id = hashlib.md5(contact.email_id.lower()).hexdigest()
-        # try to get this contact
-        #url = "{0}/lists/{1}/members/{2}".format(
-        #    config.host, list_id, mc_id)  
-        #try:
-        #    raw = execute(url, config.api_key, None, verify_ssl)
-        #    results = json.loads(raw)
-        #except:
-        #    # this contact did not exist, create
         url = "{0}/lists/{1}/members/{2}".format(
             config.host, list_id, mc_id)  
         if contact.unsubscribed == 1:
@@ -124,6 +101,7 @@ def sync_contacts(list_id):
         else:
             status = "subscribed"
         contact_object = {
+            'id': mc_id,
             'email_address': contact.email_id,
             'status': status,
             'merge_fields': {
@@ -131,17 +109,39 @@ def sync_contacts(list_id):
                 'LNAME': contact.last_name 
             }
         }
-        #payload = json.dumps(contact_object)
-        #raw = execute(host=url, api_token=config.api_key, 
-        #    payload=contact_object, verify_ssl=verify_ssl, method="PUT")
-        raw = execute_put(host=url, api_token=config.api_key, 
-            payload=contact_object, verify_ssl=verify_ssl)
-            
-        frappe.throw(raw)
-    
+        raw = execute(host=url, api_token=config.api_key, 
+            payload=contact_object, verify_ssl=verify_ssl, method="PUT")    
     
     url = "{0}/lists/{1}/members?fields=members.id,members.email_address,members.status".format(
         config.host, list_id)  
     raw = execute(url, config.api_key, None, verify_ssl)
     results = json.loads(raw)
     return { 'members': results['members'] }
+
+@frappe.whitelist()
+def get_campaigns(list_id):
+    config = frappe.get_single("MailChimpConnector Settings")
+    
+    if not config.host or not config.api_key:
+        frappe.throw( _("No configuration found. Please make sure that there is a MailChimpConnector configuration") )
+    
+    if config.verify_ssl != 1:
+        verify_ssl = False
+    else:
+        verify_ssl = True
+    url = "{0}/campaigns?fields=campaigns.id,campaigns.status,campaigns.settings.title".format(
+        config.host, list_id)  
+    raw = execute(url, config.api_key, None, verify_ssl, method="GET")
+    results = json.loads(raw)
+    for campaign in results['campaigns']:
+        try:
+            erp_campaign = frappe.get_doc("Campaign", campaign['settings']['title'])
+            # update if applicable
+            
+        except:
+            # erp does not know this campaignyet, create
+            new_campaign = frappe.get_doc({'doctype': 'Campaign'})
+            new_campaign.campaign_name = campaign['settings']['title']
+            new_campaign.insert()
+            
+    return { 'campaigns': results['campaigns'] }

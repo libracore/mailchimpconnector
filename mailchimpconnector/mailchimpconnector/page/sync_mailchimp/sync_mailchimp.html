@@ -1,13 +1,12 @@
-<div style="margin: 5px;">
-  <hr style="margin-top: 50px;">
+<div style="margin: 5px; margin-top: 0px; border-top: 1px solid white; ">
   <h3>{%= __("Sync MailChimp") %}</h3>
-  <p class="text-muted">{%= __("Synchronise contacts and compaigns to MailChimp") %}</p>
+  <p class="text-muted">{%= __("Synchronise contacts and campaigns to MailChimp") %}</p>
 
   <div class="section-body">
     <div class="row">
 	  <div class="form-column col-sm-4">
-	    <p>{{ __("Parse") }}</p>
-	    <button type="submit" class="btn btn-sm btn-primary btn-parse-file">{{ __("Parse") }}</button>
+	    <p>{{ __("Get Members") }}</p>
+	    <button type="submit" class="btn btn-sm btn-primary btn-parse-file">{{ __("Get Members") }}</button>
 	  </div>
       <div class="form-column col-sm-4">
 	    <p>{{ __("MailChimp Lists") }}</p>
@@ -23,11 +22,19 @@
     <div class="row">
 	  <div class="form-column col-sm-4">
 	    <p>{{ __("Upload") }}</p>
-	    <!-- <button type="submit" class="btn btn-sm btn-primary btn-upload-customers">{{ __("from Customers") }}</button> -->
         <button type="submit" class="btn btn-sm btn-primary btn-upload-contacts">{{ __("from Contacts") }}</button>
+        <div class="waiting-gif-upload hide"><img src="/assets/frappe/images/ui/ajax-loader.gif" /></div>
 	  </div>        
     </div>
-            
+
+    <div class="row">
+	  <div class="form-column col-sm-4">
+	    <p>{{ __("Download") }}</p>
+        <button type="submit" class="btn btn-sm btn-primary btn-download-campaigns">{{ __("get Campaigns") }}</button>
+        <div class="waiting-gif-download hide"><img src="/assets/frappe/images/ui/ajax-loader.gif" /></div>
+	  </div>        
+    </div>
+                
   </div>
   
 </div>
