@@ -64,6 +64,9 @@ function load_mailchimp_lists(page) {
 }
 
 function get_mailchimp_members(page, list_id) {
+	// enable waiting gif
+    page.main.find(".waiting-gif-members").removeClass("hide");
+    page.main.find(".btn-parse-file").addClass("hide");
     frappe.call({
         method: 'mailchimpconnector.mailchimpconnector.page.sync_mailchimp.sync_mailchimp.get_members',
         args: { 'list_id': list_id },
@@ -74,6 +77,9 @@ function get_mailchimp_members(page, list_id) {
                     $('<p>' + __(r.message.members[i].email_address) + '</p>').appendTo(parent);
                 }
             } 
+            // disable waiting gif
+            page.main.find(".waiting-gif-members").addClass("hide");
+            page.main.find(".btn-parse-file").removeClass("hide");
         }
     });
 }
@@ -83,7 +89,7 @@ function sync_contacts(page, list_id) {
     page.main.find(".waiting-gif-upload").removeClass("hide");
     page.main.find(".btn-upload-contacts").addClass("hide");
 	frappe.call({
-        method: 'mailchimpconnector.mailchimpconnector.page.sync_mailchimp.sync_mailchimp.sync_contacts',
+        method: 'mailchimpconnector.mailchimpconnector.page.sync_mailchimp.sync_mailchimp.enqueue_sync_contacts',
         args: { 'list_id': list_id },
         callback: function(r) {
             if (r.message) {
@@ -104,7 +110,7 @@ function sync_campaigns(page, list_id) {
     page.main.find(".waiting-gif-download").removeClass("hide");
     page.main.find(".btn-download-campaigns").addClass("hide");
 	frappe.call({
-        method: 'mailchimpconnector.mailchimpconnector.page.sync_mailchimp.sync_mailchimp.get_campaigns',
+        method: 'mailchimpconnector.mailchimpconnector.page.sync_mailchimp.sync_mailchimp.enqueue_get_campaigns',
         args: { 'list_id': list_id },
         callback: function(r) {
             if (r.message) {

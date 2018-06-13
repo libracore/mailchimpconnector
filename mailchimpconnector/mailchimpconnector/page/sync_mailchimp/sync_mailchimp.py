@@ -16,6 +16,7 @@ except ImportError:
     import urllib2 as http
 from datetime import datetime
 import hashlib
+from frappe.utils.background_jobs import enqueue
 
 # execute API function
 def execute(host, api_token, payload, verify_ssl=True, method="GET"):  
@@ -53,7 +54,7 @@ def get_lists():
     return { 'lists': results['lists'] }
 
 @frappe.whitelist()
-def get_members(list_id):
+def get_members(list_id, count=10000):
     config = frappe.get_single("MailChimpConnector Settings")
     
     if not config.host or not config.api_key:
@@ -63,13 +64,28 @@ def get_members(list_id):
         verify_ssl = False
     else:
         verify_ssl = True
-    url = "{0}/lists/{1}/members?fields=members.id,members.email_address,members.status".format(
-        config.host, list_id)  
-    raw = execute(url, config.api_key, None, verify_ssl)
+    url = "{0}/lists/{1}/members?members.email_address,members.status&count={2}".format(
+        config.host, list_id, count)  
+    raw = execute(host=url, api_token=config.api_key, payload=None, verify_ssl=verify_ssl)
     results = json.loads(raw)
     return { 'members': results['members'] }
 
 @frappe.whitelist()
+def enqueue_sync_contacts(list_id):
+    add_log(title= _("Starting sync"), 
+       description= ( _("Starting to sync contacts to {0}")).format(list_id),
+       status="Running")
+       
+    kwargs={
+          'list_id': list_id
+        }
+    enqueue("mailchimpconnector.mailchimpconnector.page.sync_mailchimp.sync_mailchimp.sync_contacts",
+        queue='long',
+        timeout=15000,
+        **kwargs)
+    frappe.msgprint( _("Queued for syncing. It may take a few minutes to an hour."))
+    return
+    
 def sync_contacts(list_id):
     # get settings
     config = frappe.get_single("MailChimpConnector Settings")
@@ -116,9 +132,27 @@ def sync_contacts(list_id):
         config.host, list_id)  
     raw = execute(url, config.api_key, None, verify_ssl)
     results = json.loads(raw)
+    add_log(title= _("Sync complete"), 
+       description= ( _("Sync of contacts to {0} completed.")).format(list_id),
+       status="Completed")
     return { 'members': results['members'] }
 
 @frappe.whitelist()
+def enqueue_get_campaigns(list_id):
+    add_log(title= _("Starting sync"), 
+       description=( _("Starting to sync campaigns from {0}")).format(list_id),
+       status="Running")
+       
+    kwargs={
+          'list_id': list_id
+        }
+    enqueue("mailchimpconnector.mailchimpconnector.page.sync_mailchimp.sync_mailchimp.get_campaigns",
+        queue='long',
+        timeout=15000,
+        **kwargs)
+    frappe.msgprint( _("Queued for syncing. It may take a few minutes to an hour."))
+    return
+    
 def get_campaigns(list_id):
     config = frappe.get_single("MailChimpConnector Settings")
     
@@ -129,6 +163,7 @@ def get_campaigns(list_id):
         verify_ssl = False
     else:
         verify_ssl = True
+               
     url = "{0}/campaigns?fields=campaigns.id,campaigns.status,campaigns.settings.title".format(
         config.host, list_id)  
     raw = execute(url, config.api_key, None, verify_ssl, method="GET")
@@ -143,5 +178,17 @@ def get_campaigns(list_id):
             new_campaign = frappe.get_doc({'doctype': 'Campaign'})
             new_campaign.campaign_name = campaign['settings']['title']
             new_campaign.insert()
-            
+         
+    add_log(title= _("Sync complete"), 
+       description= ( _("Sync of campaigns from {0} completed.")).format(list_id),
+       status="Completed")
     return { 'campaigns': results['campaigns'] }
+
+def add_log(title, description, status="OK"):
+    new_log = frappe.get_doc({'doctype': 'MailChimpConnector Log'})
+    new_log.title = title
+    new_log.description = description
+    new_log.status = status
+    new_log.date = datetime.now()
+    new_log.insert()
+    return

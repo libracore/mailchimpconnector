@@ -1,6 +1,6 @@
 ## MailChimpConnector
 
-Connector to sync ERPNext contacts and campai
+Connector to sync ERPNext contacts and campaigns
 
 ### License
 
