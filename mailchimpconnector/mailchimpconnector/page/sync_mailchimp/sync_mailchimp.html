@@ -7,6 +7,7 @@
 	  <div class="form-column col-sm-4">
 	    <p>{{ __("Get Members") }}</p>
 	    <button type="submit" class="btn btn-sm btn-primary btn-parse-file">{{ __("Get Members") }}</button>
+	    <div class="waiting-gif-members hide"><img src="/assets/frappe/images/ui/ajax-loader.gif" /></div>
 	  </div>
       <div class="form-column col-sm-4">
 	    <p>{{ __("MailChimp Lists") }}</p>
@@ -20,19 +21,19 @@
     </div>
 
     <div class="row">
-	  <div class="form-column col-sm-4">
+	<div class="form-column col-sm-4">
 	    <p>{{ __("Upload") }}</p>
-        <button type="submit" class="btn btn-sm btn-primary btn-upload-contacts">{{ __("from Contacts") }}</button>
-        <div class="waiting-gif-upload hide"><img src="/assets/frappe/images/ui/ajax-loader.gif" /></div>
-	  </div>        
+            <button type="submit" class="btn btn-sm btn-primary btn-upload-contacts">{{ __("from Contacts") }}</button>
+            <div class="waiting-gif-upload hide"><img src="/assets/frappe/images/ui/ajax-loader.gif" /></div>
+	</div>        
     </div>
 
     <div class="row">
-	  <div class="form-column col-sm-4">
+	<div class="form-column col-sm-4">
 	    <p>{{ __("Download") }}</p>
-        <button type="submit" class="btn btn-sm btn-primary btn-download-campaigns">{{ __("get Campaigns") }}</button>
-        <div class="waiting-gif-download hide"><img src="/assets/frappe/images/ui/ajax-loader.gif" /></div>
-	  </div>        
+            <button type="submit" class="btn btn-sm btn-primary btn-download-campaigns">{{ __("get Campaigns") }}</button>
+            <div class="waiting-gif-download hide"><img src="/assets/frappe/images/ui/ajax-loader.gif" /></div>
+	</div>        
     </div>
                 
   </div>
