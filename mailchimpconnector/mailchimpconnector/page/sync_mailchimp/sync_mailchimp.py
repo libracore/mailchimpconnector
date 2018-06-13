@@ -72,6 +72,10 @@ def get_members(list_id, count=10000):
 
 @frappe.whitelist()
 def enqueue_sync_contacts(list_id):
+    add_log(title= _("Starting sync"), 
+       description= ( _("Starting to sync contacts to {0}")).format(list_id),
+       status="Running")
+       
     kwargs={
           'list_id': list_id
         }
@@ -103,9 +107,6 @@ def sync_contacts(list_id):
         return
         
     # sync
-    add_log(title= _("Starting sync"), 
-       description= ( _("Starting to sync contacts to {0}")).format(list_id),
-       status="Running")
     for contact in erp_contacts:
         # compute mailchimp id (md5 hash of lower-case email)
         mc_id = hashlib.md5(contact.email_id.lower()).hexdigest()
@@ -138,6 +139,10 @@ def sync_contacts(list_id):
 
 @frappe.whitelist()
 def enqueue_get_campaigns(list_id):
+    add_log(title= _("Starting sync"), 
+       description=( _("Starting to sync campaigns from {0}")).format(list_id),
+       status="Running")
+       
     kwargs={
           'list_id': list_id
         }
@@ -158,11 +163,7 @@ def get_campaigns(list_id):
         verify_ssl = False
     else:
         verify_ssl = True
-        
-    add_log(title= _("Starting sync"), 
-       description=( _("Starting to sync campaigns from {0}")).format(list_id),
-       status="Running")
-       
+               
     url = "{0}/campaigns?fields=campaigns.id,campaigns.status,campaigns.settings.title".format(
         config.host, list_id)  
     raw = execute(url, config.api_key, None, verify_ssl, method="GET")
