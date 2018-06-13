@@ -91,6 +91,9 @@ def sync_contacts(list_id):
         return
         
     # sync
+    add_log(title="Starting sync", 
+       description="Starting to sync contacts to {0}".format(list_id),
+       status="Running")
     for contact in erp_contacts:
         # compute mailchimp id (md5 hash of lower-case email)
         mc_id = hashlib.md5(contact.email_id.lower()).hexdigest()
@@ -116,6 +119,9 @@ def sync_contacts(list_id):
         config.host, list_id)  
     raw = execute(url, config.api_key, None, verify_ssl)
     results = json.loads(raw)
+    add_log(title="Sync complete", 
+       description="Sync of contacts to {0} completed.".format(list_id),
+       status="Completed")
     return { 'members': results['members'] }
 
 @frappe.whitelist()
@@ -145,3 +151,12 @@ def get_campaigns(list_id):
             new_campaign.insert()
             
     return { 'campaigns': results['campaigns'] }
+
+def add_log(title, description, status="OK"):
+    new_log = frappe.get_doc({'doctype': 'MailChimpConnector Log'})
+    new_log.title = title
+    new_log.description = description
+    new_log.status = status
+    new_log.date = datetime.now()
+    new_log.insert()
+    return
