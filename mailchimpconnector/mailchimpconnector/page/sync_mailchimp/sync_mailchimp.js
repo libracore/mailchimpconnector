@@ -83,7 +83,7 @@ function sync_contacts(page, list_id) {
     page.main.find(".waiting-gif-upload").removeClass("hide");
     page.main.find(".btn-upload-contacts").addClass("hide");
 	frappe.call({
-        method: 'mailchimpconnector.mailchimpconnector.page.sync_mailchimp.sync_mailchimp.sync_contacts',
+        method: 'mailchimpconnector.mailchimpconnector.page.sync_mailchimp.sync_mailchimp.enqueue_sync_contacts',
         args: { 'list_id': list_id },
         callback: function(r) {
             if (r.message) {

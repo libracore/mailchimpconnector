@@ -16,6 +16,7 @@ except ImportError:
     import urllib2 as http
 from datetime import datetime
 import hashlib
+from frappe.utils.background_jobs import enqueue
 
 # execute API function
 def execute(host, api_token, payload, verify_ssl=True, method="GET"):  
@@ -70,6 +71,18 @@ def get_members(list_id):
     return { 'members': results['members'] }
 
 @frappe.whitelist()
+def enqueue_sync_contacts(list_id):
+    kwargs={
+          'list_id': list_id
+        }
+    enqueue("mailchimpconnector.mailchimpconnector.page.sync_mailchimp.sync_mailchimp.sync_contacts",
+        queue='long',
+        timeout=1500,
+        **kwargs)
+    frappe.msgprint( _("Queued for syncing. It may take a few minutes to an hour."))
+    return
+    
+@frappe.whitelist()
 def sync_contacts(list_id):
     # get settings
     config = frappe.get_single("MailChimpConnector Settings")
@@ -116,6 +129,7 @@ def sync_contacts(list_id):
         config.host, list_id)  
     raw = execute(url, config.api_key, None, verify_ssl)
     results = json.loads(raw)
+    frappe.log_error("Sync contacts done")
     return { 'members': results['members'] }
 
 @frappe.whitelist()
