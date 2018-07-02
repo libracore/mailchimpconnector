@@ -86,7 +86,7 @@ def enqueue_sync_contacts(list_id):
     frappe.msgprint( _("Queued for syncing. It may take a few minutes to an hour."))
     return
     
-def sync_contacts(list_id):
+def sync_contacts(list_id, mailchimp_as_master=0):
     # get settings
     config = frappe.get_single("MailChimpConnector Settings")
     
@@ -100,7 +100,7 @@ def sync_contacts(list_id):
     # prepare local contacts: all contacts with an email
     erp_contacts = frappe.get_list('Contact', 
         filters={'email_id': ['LIKE', u'%@%.%']}, 
-        fields=["email_id", "first_name", "last_name", "unsubscribed"])
+        fields=["name", "email_id", "first_name", "last_name", "unsubscribed"])
     
     if not erp_contacts:
         frappe.msgprint( _("No contacts found") )
@@ -110,12 +110,32 @@ def sync_contacts(list_id):
     for contact in erp_contacts:
         # compute mailchimp id (md5 hash of lower-case email)
         mc_id = hashlib.md5(contact.email_id.lower()).hexdigest()
+        # load subscription status from mailchimp if it is set as master
+        if mailchimp_as_master == 1:
+            url = "{0}/lists/{1}/members/{2}?fields=members.id,members.email_address,members.status".format(
+                config.host, list_id, mc_id)
+            raw = execute(host=url, api_token=config.api_key, 
+                verify_ssl=verify_ssl, method="GET")
+            results = json.loads(raw)
+            try:
+                status=results['members'][0]['status']
+            except:
+                # default is unsubscribed
+                status="unsubscribed"
+            # write status to ERP
+            c = frappe.get_doc("Contact", contact.name)
+            if status == "unsubscribed":
+                c.unsubscribed = 1
+            else:
+                c.unsubscribed = 0
+            c.save()
         url = "{0}/lists/{1}/members/{2}".format(
             config.host, list_id, mc_id)  
-        if contact.unsubscribed == 1:
-            status = "unsubscribed"
-        else:
-            status = "subscribed"
+        if not mailchimp_as_master == 1:
+            if contact.unsubscribed == 1:
+                status = "unsubscribed"
+            else:
+                status = "subscribed"
         contact_object = {
             'id': mc_id,
             'email_address': contact.email_id,
@@ -137,6 +157,10 @@ def sync_contacts(list_id):
        status="Completed")
     return { 'members': results['members'] }
 
+def get_status_from_mailchimp(config, list_id, contact_name, mc_id):
+    url = "{0}/lists/{1}/members/{2}".format(
+            config.host, list_id, mc_id)  
+            
 @frappe.whitelist()
 def enqueue_get_campaigns(list_id):
     add_log(title= _("Starting sync"), 
