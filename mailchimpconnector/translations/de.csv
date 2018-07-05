@@ -1,0 +1,17 @@
+Page: Sync MailChimp,Sync MailChimp,MailChimp synchronisieren
+Page: Sync MailChimp,Synchronise contacts and campaigns to MailChimp,Synchronisiert Kontakte und Kampagnen mit MailChimp
+Page: Sync MailChimp,MailChimp Lists,MailChimp Listen
+Page: Sync MailChimp,Get Members,Mitglieder anzeigen
+Page: Sync MailChimp,Contacts to MailChimp,Kontakte an MailChimp senden
+Page: Sync MailChimp,Campaigns from MailChimp,Kampagnen von MailChimp holen
+Page: Sync MailChimp,MailChimp as master for subscription,MailChimp als Master für den Anmeldestatus verwenden
+Page: Sync MailChimp,Functions,Funktionen
+DocType: MailChimpConnector Log,MailChimpConnector Log,MailChimpConnector Protokoll
+DocType: MailChimpConnector Log,Sync complete,Synchronisation abgeschlossen
+DocType: MailChimpConnector Log,Starting sync,Synchronisation gestartet
+DocType: MailChimpConnector Settings,MailChimpConnector Settings,MailChimpConnector-Einstellungen
+DocType: MailChimpConnector Settings,Something like https://[dc].api.mailchimp.com/3.0 where [dc] is the last part of the API key.,Etwas wie https://[dc].api.mailchimp.com/3.0 wobei [dc] der letzte Teil des API-Schlüssels ist.
+DocType: MailChimpConnector Settings,API key,API-Schlüssel
+DocType: MailChimpConnector Settings,Something like 12345dcdb21ffb14fe458d0d9f7bc742-us05,Etwas wie 12345dcdb21ffb14fe458d0d9f7bc742-us05
+DocType: MailChimpConnector Settings,Verify SSL,SSL prüfen
+DocType: MailChimpConnector Settings,Only deactivate in test environments,Nur in Entwicklungsumgebungen deaktivieren
