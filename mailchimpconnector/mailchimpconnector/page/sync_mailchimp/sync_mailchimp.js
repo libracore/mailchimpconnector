@@ -31,7 +31,8 @@ frappe.sync_mailchimp = {
         this.page.main.find(".btn-upload-contacts").on('click', function() {	
             // upload contacts
 			var list_id = document.getElementById("mailchimp_lists").value;
-			sync_contacts(page, list_id);
+			var subscription = document.getElementById("chkSubscribeMailChimpMaster").checked;
+			sync_contacts(page, list_id, subscription);
         });
         this.page.main.find(".btn-download-campaigns").on('click', function() {	
             // download campaigns
@@ -84,13 +85,20 @@ function get_mailchimp_members(page, list_id) {
     });
 }
 
-function sync_contacts(page, list_id) {
+function sync_contacts(page, list_id, mailchimp_as_master) {
     // enable waiting gif
     page.main.find(".waiting-gif-upload").removeClass("hide");
     page.main.find(".btn-upload-contacts").addClass("hide");
+    var master = 0;
+    if (mailchimp_as_master) {
+		master = 1;
+	}
 	frappe.call({
         method: 'mailchimpconnector.mailchimpconnector.page.sync_mailchimp.sync_mailchimp.enqueue_sync_contacts',
-        args: { 'list_id': list_id },
+        args: { 
+			'list_id': list_id,
+			'mailchimp_as_master': master 
+		},
         callback: function(r) {
             if (r.message) {
                 var parent = page.main.find(".insert-log-messages").empty();
