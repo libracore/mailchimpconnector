@@ -10,10 +10,6 @@ import json
 import base64
 import requests
 from requests.auth import HTTPBasicAuth
-try:
-    from urllib import request as http
-except ImportError:
-    import urllib2 as http
 from datetime import datetime
 import hashlib
 from frappe.utils.background_jobs import enqueue
@@ -71,13 +67,14 @@ def get_members(list_id, count=10000):
     return { 'members': results['members'] }
 
 @frappe.whitelist()
-def enqueue_sync_contacts(list_id):
+def enqueue_sync_contacts(list_id, mailchimp_as_master=0):
     add_log(title= _("Starting sync"), 
        description= ( _("Starting to sync contacts to {0}")).format(list_id),
        status="Running")
        
     kwargs={
-          'list_id': list_id
+          'list_id': list_id,
+          'mailchimp_as_master': mailchimp_as_master
         }
     enqueue("mailchimpconnector.mailchimpconnector.page.sync_mailchimp.sync_mailchimp.sync_contacts",
         queue='long',
@@ -111,14 +108,14 @@ def sync_contacts(list_id, mailchimp_as_master=0):
         # compute mailchimp id (md5 hash of lower-case email)
         mc_id = hashlib.md5(contact.email_id.lower()).hexdigest()
         # load subscription status from mailchimp if it is set as master
-        if mailchimp_as_master == 1:
-            url = "{0}/lists/{1}/members/{2}?fields=members.id,members.email_address,members.status".format(
+        if "{0}".format(mailchimp_as_master) == "1":
+            url = "{0}/lists/{1}/members/{2}".format(
                 config.host, list_id, mc_id)
             raw = execute(host=url, api_token=config.api_key, 
-                verify_ssl=verify_ssl, method="GET")
+                verify_ssl=verify_ssl, method="GET", payload=None)
             results = json.loads(raw)
             try:
-                status=results['members'][0]['status']
+                status=results['status']
             except:
                 # default is unsubscribed
                 status="unsubscribed"
@@ -131,7 +128,7 @@ def sync_contacts(list_id, mailchimp_as_master=0):
             c.save()
         url = "{0}/lists/{1}/members/{2}".format(
             config.host, list_id, mc_id)  
-        if not mailchimp_as_master == 1:
+        if not "{0}".format(mailchimp_as_master) == "1":
             if contact.unsubscribed == 1:
                 status = "unsubscribed"
             else:
