@@ -135,12 +135,12 @@ def sync_contacts(list_id, mailchimp_as_master=0):
             else:
                 status = "subscribed"
         contact_object = {
-            'id': mc_id,
-            'email_address': contact.email_id,
-            'status': status,
-            'merge_fields': {
-                'FNAME': contact.first_name, 
-                'LNAME': contact.last_name 
+            "id": mc_id,
+            "email_address": contact.email_id,
+            "status": status,
+            "merge_fields": {
+                "FNAME": contact.first_name, 
+                "LNAME": contact.last_name 
             }
         }
         raw = execute(host=url, api_token=config.api_key, 
