@@ -116,6 +116,7 @@ def sync_contacts(list_id, mailchimp_as_master=0):
         # load subscription status from mailchimp if it is set as master
         # default is unsubscribed
         contact_status="unsubscribed"
+        flag_create = 
         if "{0}".format(mailchimp_as_master) == "1":
             url = "{0}/lists/{1}/members/{2}".format(
                 config.host, list_id, mc_id)
@@ -152,7 +153,6 @@ def sync_contacts(list_id, mailchimp_as_master=0):
 
         # switched to pure string rather than json (compatibility issue of MailChimp API, see #1331)
         contact_object = """{{
-            "id": "{mc_id}",
             "email_address": "{email_id}",
             "status": "{contact_status}",
             "merge_fields": {{
