@@ -116,6 +116,7 @@ def sync_contacts(list_id, mailchimp_as_master=0):
         # load subscription status from mailchimp if it is set as master
         # default is unsubscribed
         contact_status="unsubscribed"
+        flag_create = False
         if "{0}".format(mailchimp_as_master) == "1":
             url = "{0}/lists/{1}/members/{2}".format(
                 config.host, list_id, mc_id)
@@ -140,15 +141,21 @@ def sync_contacts(list_id, mailchimp_as_master=0):
                 if contact.unsubscribed == 1:
                     contact_status = "unsubscribed"
                 else:
-                    contact_status = "subscribed"                
+                    contact_status = "subscribed"
+                # mark for creation
+                flag_create = True
         else:
             if contact.unsubscribed == 1:
                 contact_status = "unsubscribed"
             else:
                 contact_status = "subscribed"
 
-        url = "{0}/lists/{1}/members/{2}".format(
-            config.host, list_id, mc_id)  
+        if flag_create:
+            url = "{0}/lists/{1}/members/".format(config.host, list_id)
+            method="POST"
+        else:
+            url = "{0}/lists/{1}/members/{2}".format(config.host, list_id, mc_id)  
+            method="PUT"
 
         # switched to pure string rather than json (compatibility issue of MailChimp API, see #1331)
         contact_object = """{{
@@ -161,7 +168,7 @@ def sync_contacts(list_id, mailchimp_as_master=0):
         }}""".format(mc_id=mc_id,email_id=contact.email_id,contact_status=contact_status,first_name=contact.first_name,last_name=contact.last_name)
         
         raw = execute(host=url, api_token=config.api_key, 
-            payload=contact_object, verify_ssl=verify_ssl, method="PUT")
+            payload=contact_object, verify_ssl=verify_ssl, method=method)
         contact_written.append(contact.email_id)
     
     url = "{0}/lists/{1}/members?fields=members.id,members.email_address,members.status".format(
