@@ -26,7 +26,10 @@ def execute(host, api_token, payload, verify_ssl=True, method="GET"):
         
         status=response.status_code
         text=response.text
-        
+        if status != 200:
+            frappe.log_error("Unexcpected MailChimp response: http response {status} with message {text}".format(
+                status=status,text=text))
+            
         return text
     except Exception as e:
         #frappe.log_error("Execution of http request failed. Please check host and API token.")
@@ -133,15 +136,17 @@ def sync_contacts(list_id, mailchimp_as_master=0):
                 status = "unsubscribed"
             else:
                 status = "subscribed"
-        contact_object = {
-            "id": mc_id,
-            "email_address": contact.email_id,
-            "status": status,
-            "merge_fields": {
-                "FNAME": contact.first_name, 
-                "LNAME": contact.last_name 
-            }
-        }
+        # switched to pure string rather than json (compatibility issue of MailChimp API, see #1331)
+        contact_object = """{{
+            "id": {mc_id],
+            "email_address": {email_id},
+            "status": {status},
+            "merge_fields": {{
+                "FNAME": {first_name}, 
+                "LNAME": {last_name} 
+            }}
+        }}""".format(mc_id=mc_id,email_id=contact.email_id,status=status,first_name=contact.first_name,last_name=contact.last_name)
+        
         raw = execute(host=url, api_token=config.api_key, 
             payload=contact_object, verify_ssl=verify_ssl, method="PUT")    
     
