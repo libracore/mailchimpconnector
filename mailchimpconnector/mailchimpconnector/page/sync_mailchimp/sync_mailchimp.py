@@ -26,9 +26,9 @@ def execute(host, api_token, payload, verify_ssl=True, method="GET"):
         
         status=response.status_code
         text=response.text
-        if status != 200:
-            frappe.log_error("Unexcpected MailChimp response: http response {status} with message {text} on payload {payload}".format(
-                status=status,text=text, payload=payload))
+        if status not in [200, 404]:
+            frappe.log_error("Unexcpected MailChimp response: http {method} {host} response {status} with message {text} on payload {payload}".format(
+                status=status,text=text, payload=payload, method=method, host=host))
         if status == 404:
             return None
         
@@ -157,15 +157,14 @@ def sync_contacts(list_id, mailchimp_as_master=0):
             url = "{0}/lists/{1}/members/{2}".format(config.host, list_id, mc_id)  
             method="PUT"
 
-        # switched to pure string rather than json (compatibility issue of MailChimp API, see #1331)
-        contact_object = """{{
-            "email_address": "{email_id}",
-            "status": "{contact_status}",
-            "merge_fields": {{
-                "FNAME": "{first_name}", 
-                "LNAME": "{last_name}"
-            }}
-        }}""".format(mc_id=mc_id,email_id=contact.email_id,contact_status=contact_status,first_name=contact.first_name,last_name=contact.last_name)
+        contact_object = {
+            "email_address": contact.email_id,
+            "status": contact_status,
+            "merge_fields": {
+                "FNAME": contact.first_name, 
+                "LNAME": contact.last_name
+            }
+        }
         
         raw = execute(host=url, api_token=config.api_key, 
             payload=contact_object, verify_ssl=verify_ssl, method=method)
