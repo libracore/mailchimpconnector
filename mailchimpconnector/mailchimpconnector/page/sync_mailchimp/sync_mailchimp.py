@@ -107,6 +107,7 @@ def sync_contacts(list_id, mailchimp_as_master=0):
         return
         
     # sync
+    contact_written = []
     for contact in erp_contacts:
         # compute mailchimp id (md5 hash of lower-case email)
         mc_id = hashlib.md5(contact.email_id.lower()).hexdigest()
@@ -148,14 +149,15 @@ def sync_contacts(list_id, mailchimp_as_master=0):
         }}""".format(mc_id=mc_id,email_id=contact.email_id,status=status,first_name=contact.first_name,last_name=contact.last_name)
         
         raw = execute(host=url, api_token=config.api_key, 
-            payload=contact_object, verify_ssl=verify_ssl, method="PUT")    
+            payload=contact_object, verify_ssl=verify_ssl, method="PUT")
+        contact_written.append(contact.email_id)
     
     url = "{0}/lists/{1}/members?fields=members.id,members.email_address,members.status".format(
         config.host, list_id)  
     raw = execute(url, config.api_key, None, verify_ssl)
     results = json.loads(raw)
     add_log(title= _("Sync complete"), 
-       description= ( _("Sync of contacts to {0} completed.")).format(list_id),
+       description= ( _("Sync of contacts to {0} completed.<br>{1}")).format(list_id, ",".join(contact_written)),
        status="Completed")
     return { 'members': results['members'] }
 
