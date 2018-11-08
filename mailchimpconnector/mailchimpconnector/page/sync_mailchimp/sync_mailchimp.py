@@ -27,7 +27,7 @@ def execute(host, api_token, payload, verify_ssl=True, method="GET"):
         status=response.status_code
         text=response.text
         if status not in [200, 404]:
-            frappe.log_error("Unexcpected MailChimp response: http {method} {host} response {status} with message {text} on payload {payload}".format(
+            frappe.log_error("Unexpected MailChimp response: http {method} {host} response {status} with message {text} on payload {payload}".format(
                 status=status,text=text, payload=payload, method=method, host=host))
         if status == 404:
             return None
@@ -161,8 +161,8 @@ def sync_contacts(list_id, mailchimp_as_master=0):
             "email_address": contact.email_id,
             "status": contact_status,
             "merge_fields": {
-                "FNAME": contact.first_name, 
-                "LNAME": contact.last_name
+                "FNAME": contact.first_name or "", 
+                "LNAME": contact.last_name or ""
             }
         }
         
@@ -175,7 +175,7 @@ def sync_contacts(list_id, mailchimp_as_master=0):
     raw = execute(url, config.api_key, None, verify_ssl)
     results = json.loads(raw)
     add_log(title= _("Sync complete"), 
-       description= ( _("Sync of contacts to {0} completed.<br>{1}")).format(list_id, ",".join(contact_written)),
+       description= ( _("Sync of contacts to {0} completed.\n{1}")).format(list_id, ",".join(contact_written)),
        status="Completed")
     return { 'members': results['members'] }
 
