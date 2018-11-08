@@ -29,7 +29,9 @@ def execute(host, api_token, payload, verify_ssl=True, method="GET"):
         if status != 200:
             frappe.log_error("Unexcpected MailChimp response: http response {status} with message {text} on payload {payload}".format(
                 status=status,text=text, payload=payload))
-            
+        if status == 404:
+            return None
+        
         return text
     except Exception as e:
         #frappe.log_error("Execution of http request failed. Please check host and API token.")
@@ -112,41 +114,52 @@ def sync_contacts(list_id, mailchimp_as_master=0):
         # compute mailchimp id (md5 hash of lower-case email)
         mc_id = hashlib.md5(contact.email_id.lower()).hexdigest()
         # load subscription status from mailchimp if it is set as master
+        # default is unsubscribed
+        contact_status="unsubscribed"
         if "{0}".format(mailchimp_as_master) == "1":
             url = "{0}/lists/{1}/members/{2}".format(
                 config.host, list_id, mc_id)
             raw = execute(host=url, api_token=config.api_key, 
                 verify_ssl=verify_ssl, method="GET", payload=None)
-            results = json.loads(raw)
-            try:
-                status=results['status']
-            except:
-                # default is unsubscribed
-                status="unsubscribed"
-            # write status to ERP
-            c = frappe.get_doc("Contact", contact.name)
-            if status == "unsubscribed":
-                c.unsubscribed = 1
+            if raw:
+                try:
+                    results = json.loads(raw)
+                    contact_status=results['status']
+                except:
+                    # default is unsubscribed
+                    contact_status="unsubscribed"
+                # write status to ERP
+                c = frappe.get_doc("Contact", contact.name)
+                if contact_status == "unsubscribed":
+                    c.unsubscribed = 1
+                else:
+                    c.unsubscribed = 0
+                c.save()
             else:
-                c.unsubscribed = 0
-            c.save()
+                # contact not found on MailChimp, take value from ERPNext
+                if contact.unsubscribed == 1:
+                    contact_status = "unsubscribed"
+                else:
+                    contact_status = "subscribed"                
+        else:
+            if contact.unsubscribed == 1:
+                contact_status = "unsubscribed"
+            else:
+                contact_status = "subscribed"
+
         url = "{0}/lists/{1}/members/{2}".format(
             config.host, list_id, mc_id)  
-        if not "{0}".format(mailchimp_as_master) == "1":
-            if contact.unsubscribed == 1:
-                status = "unsubscribed"
-            else:
-                status = "subscribed"
+
         # switched to pure string rather than json (compatibility issue of MailChimp API, see #1331)
         contact_object = """{{
-            "id": {mc_id},
-            "email_address": {email_id},
-            "status": {status},
+            "id": "{mc_id}",
+            "email_address": "{email_id}",
+            "status": "{contact_status}",
             "merge_fields": {{
-                "FNAME": {first_name}, 
-                "LNAME": {last_name} 
+                "FNAME": "{first_name}", 
+                "LNAME": "{last_name}"
             }}
-        }}""".format(mc_id=mc_id,email_id=contact.email_id,status=status,first_name=contact.first_name,last_name=contact.last_name)
+        }}""".format(mc_id=mc_id,email_id=contact.email_id,contact_status=contact_status,first_name=contact.first_name,last_name=contact.last_name)
         
         raw = execute(host=url, api_token=config.api_key, 
             payload=contact_object, verify_ssl=verify_ssl, method="PUT")
