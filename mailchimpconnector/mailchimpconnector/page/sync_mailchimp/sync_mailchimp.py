@@ -166,8 +166,11 @@ def sync_contacts(list_id, mailchimp_as_master=0):
             }
         }
         
-        raw = execute(host=url, api_token=config.api_key, 
-            payload=contact_object, verify_ssl=verify_ssl, method=method)
+        # only send subscribed contacts to MailChimp (to prevent reject 400)
+        # unsubscribe from MailChimp (not ERPNext)
+        if contact_status == "subscribed":
+            raw = execute(host=url, api_token=config.api_key, 
+                payload=contact_object, verify_ssl=verify_ssl, method=method)
         contact_written.append(contact.email_id)
     
     url = "{0}/lists/{1}/members?fields=members.id,members.email_address,members.status".format(
