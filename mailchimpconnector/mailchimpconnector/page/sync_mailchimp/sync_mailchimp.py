@@ -112,7 +112,7 @@ def sync_contacts(list_id, mailchimp_as_master=0):
     contact_written = []
     for contact in erp_contacts:
         # compute mailchimp id (md5 hash of lower-case email)
-        mc_id = hashlib.md5(contact.email_id.lower()).hexdigest()
+        mc_id = hashlib.md5(contact.email_id.lower().encode('utf-8')).hexdigest()
         # load subscription status from mailchimp if it is set as master
         # default is unsubscribed
         contact_status="unsubscribed"
