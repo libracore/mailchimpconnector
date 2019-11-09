@@ -4,3 +4,4 @@
 *.swp
 tags
 mailchimpconnector/docs/current
+__pycache__
