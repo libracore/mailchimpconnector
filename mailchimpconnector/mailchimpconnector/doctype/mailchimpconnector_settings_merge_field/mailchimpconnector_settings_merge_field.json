@@ -1,0 +1,44 @@
+{
+ "creation": "2020-02-27 21:18:37.409455",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "merge_field",
+  "contact_field",
+  "default"
+ ],
+ "fields": [
+  {
+   "fieldname": "merge_field",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Merge field",
+   "reqd": 1
+  },
+  {
+   "fieldname": "contact_field",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Contact field",
+   "reqd": 1
+  },
+  {
+   "fieldname": "default",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Default"
+  }
+ ],
+ "istable": 1,
+ "modified": "2020-02-27 21:19:28.430429",
+ "modified_by": "Administrator",
+ "module": "MailChimpConnector",
+ "name": "MailChimpConnector Settings Merge Field",
+ "owner": "Administrator",
+ "permissions": [],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

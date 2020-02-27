@@ -102,7 +102,7 @@ def sync_contacts(list_id, mailchimp_as_master=0):
     # prepare local contacts: all contacts with an email
     erp_contacts = frappe.get_list('Contact', 
         filters={'email_id': ['LIKE', u'%@%.%']}, 
-        fields=["name", "email_id", "first_name", "last_name", "unsubscribed"])
+        fields=["name"])
     
     if not erp_contacts:
         frappe.msgprint( _("No contacts found") )
@@ -110,7 +110,9 @@ def sync_contacts(list_id, mailchimp_as_master=0):
         
     # sync
     contact_written = []
-    for contact in erp_contacts:
+    for cnt in erp_contacts:
+        # read full contact
+        contact = frappe.get_doc("Contact", cnt['name'])
         # compute mailchimp id (md5 hash of lower-case email)
         mc_id = hashlib.md5(contact.email_id.lower().encode('utf-8')).hexdigest()
         # load subscription status from mailchimp if it is set as master
@@ -165,7 +167,14 @@ def sync_contacts(list_id, mailchimp_as_master=0):
                 "LNAME": contact.last_name or ""
             }
         }
-        
+        # add additional merge fields
+        try:
+            for field in config.merge_fields:
+                if field.merge_field not in contact_object['merge_fields']:
+                    contact_object['merge_fields'][field.merge_field] = (contact.get(str(field.contact_field)) or field.default)
+        except Exception as e:
+            frappe.log_error("{0}".format(e), "MailChimp sync_contacts")
+            
         # only send subscribed contacts to MailChimp (to prevent reject 400)
         # unsubscribe from MailChimp (not ERPNext)
         if contact_status == "subscribed":

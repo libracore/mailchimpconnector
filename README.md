@@ -2,6 +2,12 @@
 
 Connector to sync ERPNext contacts and campaigns
 
+Disclaimer: 
+
+* ERPNext is a trademark by Frappe Ltd. Refer to [https://erpnext.org](https://erpnext.org)
+* MailChimp is a trademark by MailChimp. Refer to [https://mailchimp.com](https://mailchimp.com)
+* This integration module is created and maintained by libracore. Refer to [https://libracore.com](https://libracore.com)
+
 ### License
 
 AGPL
@@ -19,8 +25,10 @@ Install with
 ### Configuration
 
 After the installation, you will find the app listed under the help menu. 
-To configure, type "MailChimpConnector Settings" in the awesome bar. Enter host and key and save.
+To configure, type "MailChimpConnector Settings" in the awesome bar. Enter host and key and save. 
+If you want, extend your custom merge fields.
 
 ### Use
 
-To use the connector, type "Open Sync MailChimp" in the awesome bar.
+To use the connector, type "Open Sync MailChimp" in the awesome bar. 
+Select which list you want to sync to and hit sync.
